@@ -250,15 +250,15 @@ ${file.content}
   let userMessage = ``;
   const templatePromptFile = files.filter((x) => x.path.startsWith('.bolt')).find((x) => x.name == 'prompt');
 
-  if (templatePromptFile) {
-    userMessage = `
+  // if (templatePromptFile) {
+  userMessage = `
 TEMPLATE INSTRUCTIONS:
-${templatePromptFile.content}
+${templatePromptFile?.content || ''}
 
 IMPORTANT: Dont Forget to install the dependencies before running the app
 ---
 `;
-  }
+  // }
 
   if (filesToImport.ignoreFile.length > 0) {
     userMessage =

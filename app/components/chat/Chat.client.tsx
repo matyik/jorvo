@@ -262,19 +262,13 @@ export const ChatImpl = memo(
     };
 
     const sendMessage = async (_event: React.UIEvent, messageInput?: string) => {
+      console.log('MESSAGES: ', messages);
       const _input = messageInput || input;
 
       if (_input.length === 0 || isLoading) {
         return;
       }
 
-      /**
-       * @note (delm) Usually saving files shouldn't take long but it may take longer if there
-       * many unsaved files. In that case we need to block user input and show an indicator
-       * of some kind so the user is aware that something is happening. But I consider the
-       * happy case to be no unsaved files and I would expect users to save their changes
-       * before they send another message.
-       */
       await workbenchStore.saveAllFiles();
 
       if (error != null) {
@@ -282,119 +276,61 @@ export const ChatImpl = memo(
       }
 
       const fileModifications = workbenchStore.getFileModifcations();
-
       chatStore.setKey('aborted', false);
-
       runAnimation();
 
-      if (!chatStarted && _input && autoSelectTemplate) {
+      if (!chatStarted && _input) {
         setFakeLoading(true);
-        setMessages([
-          {
-            id: `${new Date().getTime()}`,
-            role: 'user',
-            content: [
-              {
-                type: 'text',
-                text: `[Model: ${model}]\n\n[Provider: ${provider.name}]\n\n${_input}`,
-              },
-              ...imageDataList.map((imageData) => ({
-                type: 'image',
-                image: imageData,
-              })),
-            ] as any, // Type assertion to bypass compiler check
-          },
-        ]);
+        // setMessages([
+        //   {
+        //     id: `${new Date().getTime()}`,
+        //     role: 'user',
+        //     content: [
+        //       {
+        //         type: 'text',
+        //         text: `[Model: ${model}]\n\n[Provider: ${provider.name}]\n\n${_input}`,
+        //       },
+        //       ...imageDataList.map((imageData) => ({
+        //         type: 'image',
+        //         image: imageData,
+        //       })),
+        //     ] as any,
+        //   },
+        // ]);
 
-        // reload();
-
-        const { template, title } = await selectStarterTemplate({
-          message: _input,
-          model,
-          provider,
+        const temResp = await getTemplates('remotion', 'Remotion Template').catch((e) => {
+          if (e.message.includes('rate limit')) {
+            toast.warning('Rate limit exceeded. Skipping starter template\n Continuing with blank template');
+          } else {
+            toast.warning('Failed to import starter template\n Continuing with blank template');
+          }
+          return null;
         });
 
-        if (template !== 'blank') {
-          const temResp = await getTemplates(template, title).catch((e) => {
-            if (e.message.includes('rate limit')) {
-              toast.warning('Rate limit exceeded. Skipping starter template\n Continuing with blank template');
-            } else {
-              toast.warning('Failed to import starter template\n Continuing with blank template');
-            }
+        if (temResp) {
+          const { assistantMessage, userMessage } = temResp;
 
-            return null;
-          });
-
-          if (temResp) {
-            const { assistantMessage, userMessage } = temResp;
-
-            setMessages([
-              {
-                id: `${new Date().getTime()}`,
-                role: 'user',
-                content: _input,
-
-                // annotations: ['hidden'],
-              },
-              {
-                id: `${new Date().getTime()}`,
-                role: 'assistant',
-                content: assistantMessage,
-              },
-              {
-                id: `${new Date().getTime()}`,
-                role: 'user',
-                content: `[Model: ${model}]\n\n[Provider: ${provider.name}]\n\n${userMessage}`,
-                annotations: ['hidden'],
-              },
-            ]);
-
-            reload();
-            setFakeLoading(false);
-
-            return;
-          } else {
-            setMessages([
-              {
-                id: `${new Date().getTime()}`,
-                role: 'user',
-                content: [
-                  {
-                    type: 'text',
-                    text: `[Model: ${model}]\n\n[Provider: ${provider.name}]\n\n${_input}`,
-                  },
-                  ...imageDataList.map((imageData) => ({
-                    type: 'image',
-                    image: imageData,
-                  })),
-                ] as any, // Type assertion to bypass compiler check
-              },
-            ]);
-            reload();
-            setFakeLoading(false);
-
-            return;
-          }
-        } else {
           setMessages([
             {
               id: `${new Date().getTime()}`,
               role: 'user',
-              content: [
-                {
-                  type: 'text',
-                  text: `[Model: ${model}]\n\n[Provider: ${provider.name}]\n\n${_input}`,
-                },
-                ...imageDataList.map((imageData) => ({
-                  type: 'image',
-                  image: imageData,
-                })),
-              ] as any, // Type assertion to bypass compiler check
+              content: _input,
+            },
+            {
+              id: `${new Date().getTime()}`,
+              role: 'assistant',
+              content: assistantMessage,
+            },
+            {
+              id: `${new Date().getTime()}`,
+              role: 'user',
+              content: `[Model: ${model}]\n\n[Provider: ${provider.name}]\n\n${userMessage}`,
+              annotations: ['hidden'],
             },
           ]);
+
           reload();
           setFakeLoading(false);
-
           return;
         }
       }

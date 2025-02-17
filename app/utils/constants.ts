@@ -113,4 +113,12 @@ export const STARTER_TEMPLATES: Template[] = [
     tags: ['angular', 'typescript', 'frontend', 'spa'],
     icon: 'i-bolt:angular',
   },
+  {
+    name: 'remotion',
+    label: 'Remotion Starter',
+    description: 'basic remotion',
+    githubRepo: 'remotion-dev/template-helloworld',
+    tags: ['remotion', 'typescript', 'frontend'],
+    icon: 'i-bolt:angular',
+  },
 ];
