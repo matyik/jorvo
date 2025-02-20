@@ -92,7 +92,7 @@ ${commandString}
   };
 }
 
-export function escapeBoltArtifactTags(input: string) {
+export function escapeJorvoArtifactTags(input: string) {
   // Regular expression to match boltArtifact tags and their content
   const regex = /(<boltArtifact[^>]*>)([\s\S]*?)(<\/boltArtifact>)/g;
 
@@ -108,7 +108,7 @@ export function escapeBoltArtifactTags(input: string) {
   });
 }
 
-export function escapeBoltAActionTags(input: string) {
+export function escapeJorvoAActionTags(input: string) {
   // Regular expression to match boltArtifact tags and their content
   const regex = /(<boltAction[^>]*>)([\s\S]*?)(<\/boltAction>)/g;
 
@@ -124,6 +124,6 @@ export function escapeBoltAActionTags(input: string) {
   });
 }
 
-export function escapeBoltTags(input: string) {
-  return escapeBoltArtifactTags(escapeBoltAActionTags(input));
+export function escapeJorvoTags(input: string) {
+  return escapeJorvoArtifactTags(escapeJorvoAActionTags(input));
 }

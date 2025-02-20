@@ -256,6 +256,9 @@ TEMPLATE INSTRUCTIONS:
 ${templatePromptFile?.content || ''}
 
 IMPORTANT: Dont Forget to install the dependencies before running the app
+
+If the user asks for a sound, ignore it.
+
 ---
 `;
   // }

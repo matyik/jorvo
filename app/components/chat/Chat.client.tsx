@@ -376,6 +376,7 @@ export const ChatImpl = memo(
             })),
           ] as any, // Type assertion to bypass compiler check
         });
+        workbenchStore.currentView.set('preview');
       }
 
       setInput('');
